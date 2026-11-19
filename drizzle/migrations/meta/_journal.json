@@ -29,6 +29,13 @@
       "when": 1795098010376,
       "tag": "0003_admin_read_access",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795098902106,
+      "tag": "0004_rm_offerings_system",
+      "breakpoints": true
     }
   ]
 }

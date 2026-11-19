@@ -1,5 +1,18 @@
 # Tasks
 
+## RM Offerings System (kutoka faili la maelezo)
+- [ ] Database: members, offering_categories (seed 4), transactions, transaction_items, audit_logs, vyeo vya Mhazini/Msaidizi/Mkaguzi
+- [ ] /give — mwanachama kutoa sadaka bila password + risiti
+- [ ] SMS ya risiti kupitia NextSMS (+ Resend)
+- [ ] /rm dashboard: KPI, chati, miamala ya karibuni
+- [ ] /rm/offerings/new — kurekodi sadaka moja
+- [ ] /rm/offerings/bulk-upload — Excel
+- [ ] /rm/categories — Head Treasurer tu
+- [ ] /rm/reports — Excel/PDF, taarifa ya mwanachama
+- [ ] Ombi la kufuta (void) na idhini
+
+## Zamani
+
 - [x] Repair missing browser Cloud configuration preventing password submission; real drawer submission now reaches the signup service and reports the separate existing account-creation failure.
 
 - [x] Correct the website and installed-app OTP forms shown in the screenshot: verified OTP-only entry and password drawer after real OTP confirmation on desktop and mobile.
