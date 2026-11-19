@@ -39,12 +39,8 @@ export const requestSignupOtp = createServerFn({ method: "POST" })
     if (!/^255[67]\d{8}$/.test(phone)) {
       return { success: false, error: "Tafadhali ingiza namba halali ya simu ya Tanzania." };
     }
-    const credentials = {
-      username: process.env["NEXTSMS_USERNAME"] ?? "",
-      password: process.env["NEXTSMS_PASSWORD"] ?? "",
-      senderId: process.env["NEXTSMS_SENDER_ID"] ?? "",
-    };
-    const { nextSmsHeaders, sendNextSms } = await import("./nextsms.server");
+    const { nextSmsHeaders, resolveNextSmsCredentials, sendNextSms } = await import("./nextsms.server");
+    const credentials = resolveNextSmsCredentials(process.env);
     try {
       nextSmsHeaders(credentials);
       // OTPs are private service-only records; no browser can read their values.

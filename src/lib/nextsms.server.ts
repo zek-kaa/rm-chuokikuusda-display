@@ -6,6 +6,27 @@ export interface NextSmsCredentials {
   senderId: string;
 }
 
+// Credentials may be stored either as separate username/password secrets or as
+// a single NEXTSMS_AUTH_TOKEN holding Base64 of "username:password".
+export function resolveNextSmsCredentials(env: Record<string, string | undefined>): NextSmsCredentials {
+  let username = env["NEXTSMS_USERNAME"] ?? "";
+  let password = env["NEXTSMS_PASSWORD"] ?? "";
+  const token = env["NEXTSMS_AUTH_TOKEN"] ?? "";
+  if ((!username || !password) && token) {
+    try {
+      const decoded = atob(token);
+      const separator = decoded.indexOf(":");
+      if (separator > 0) {
+        username = username || decoded.slice(0, separator);
+        password = password || decoded.slice(separator + 1);
+      }
+    } catch {
+      // Invalid token; leave credentials empty so the caller reports missing config.
+    }
+  }
+  return { username, password, senderId: env["NEXTSMS_SENDER_ID"] ?? "" };
+}
+
 export function nextSmsHeaders(credentials: NextSmsCredentials): Headers {
   if (!credentials.username || !credentials.password || !credentials.senderId) {
     throw new Error("Taarifa za NextSMS hazijakamilika: username, password na Sender ID zinahitajika.");

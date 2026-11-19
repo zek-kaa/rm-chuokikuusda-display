@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { nextSmsHeaders, sendNextSms, NEXTSMS_BASE_URL } from "./nextsms.server";
+import { nextSmsHeaders, resolveNextSmsCredentials, sendNextSms, NEXTSMS_BASE_URL } from "./nextsms.server";
 
 // Dummy credentials only; never use real account values in tests.
 const credentials = { username: "test-user", password: "test-password", senderId: "TEST" };
@@ -37,5 +37,28 @@ describe("direct NextSMS integration", () => {
     const request = vi.fn();
     await expect(sendNextSms({ ...credentials, password: "" }, "255712345678", "Test", request)).rejects.toThrow("hazijakamilika");
     expect(request).not.toHaveBeenCalled();
+  });
+});
+
+describe("resolveNextSmsCredentials", () => {
+  it("decodes username and password from the Base64 auth token", () => {
+    const resolved = resolveNextSmsCredentials({
+      NEXTSMS_AUTH_TOKEN: btoa("test-user:test-password"),
+      NEXTSMS_SENDER_ID: "TEST",
+    });
+    expect(resolved).toEqual(credentials);
+  });
+  it("prefers explicit username and password secrets over the token", () => {
+    const resolved = resolveNextSmsCredentials({
+      NEXTSMS_USERNAME: "direct-user",
+      NEXTSMS_PASSWORD: "direct-password",
+      NEXTSMS_AUTH_TOKEN: btoa("test-user:test-password"),
+      NEXTSMS_SENDER_ID: "TEST",
+    });
+    expect(resolved).toEqual({ username: "direct-user", password: "direct-password", senderId: "TEST" });
+  });
+  it("returns empty credentials when the token is missing or invalid", () => {
+    expect(resolveNextSmsCredentials({}).username).toBe("");
+    expect(resolveNextSmsCredentials({ NEXTSMS_AUTH_TOKEN: "!!!not-base64!!!" }).password).toBe("");
   });
 });
