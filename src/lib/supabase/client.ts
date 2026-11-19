@@ -5,8 +5,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { brokeredPreviewStorage } from "@/integrations/supabase/previewAuthStorage";
 import { getSession } from "../auth";
 
-const PUBLIC_URL = "https://c--3a211432-3294-4d96-a557-0fed1dcb552d-prod.lovable.cloud";
-const PUBLIC_KEY = "sb_publishable_76AFYu9A64CuiRKBGBxd1g_9Shk8ciy";
+const PUBLIC_URL = "https://c--eafe7fbc-e78f-4c22-871a-fe41eb262d54-prod.lovable.cloud";
+const PUBLIC_KEY = "sb_publishable_iFgfizZFwHu0qUU_xIojyw_Wd7_kXJz";
 
 let client: SupabaseClient | undefined;
 

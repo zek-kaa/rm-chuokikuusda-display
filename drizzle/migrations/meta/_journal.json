@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795096381005,
+      "tag": "0000_create_otp_codes",
+      "breakpoints": true
+    }
+  ]
+}
