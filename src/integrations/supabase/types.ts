@@ -43,6 +43,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active: boolean
           annual_goal: number | null
           created_at: string
           full_name: string
@@ -51,11 +52,13 @@ export type Database = {
           level: string | null
           member_status: string
           phone: string | null
+          role: string | null
           total_contributed: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          active?: boolean
           annual_goal?: number | null
           created_at?: string
           full_name?: string
@@ -64,11 +67,13 @@ export type Database = {
           level?: string | null
           member_status?: string
           phone?: string | null
+          role?: string | null
           total_contributed?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          active?: boolean
           annual_goal?: number | null
           created_at?: string
           full_name?: string
@@ -77,8 +82,51 @@ export type Database = {
           level?: string | null
           member_status?: string
           phone?: string | null
+          role?: string | null
           total_contributed?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rbac_user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
           user_id?: string
         }
         Relationships: []
