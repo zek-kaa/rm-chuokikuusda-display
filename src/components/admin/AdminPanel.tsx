@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Settings, Users, BarChart3, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { X, Wallet, ArrowRight, ShieldCheck, Settings, Users, BarChart3, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getSupabaseClient } from "@/lib/supabase/database";
 import ChurchSettingsForm from "@/components/dashboard/ChurchSettingsForm";
@@ -403,6 +404,27 @@ const AdminPanel = ({ open, onClose }: Props) => {
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            <div className="shrink-0 px-3 pt-3">
+              <Link
+                to="/rm"
+                onClick={onClose}
+                className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-amber-300/30 bg-gradient-to-r from-amber-500/25 via-amber-400/10 to-emerald-500/20 p-4 text-white shadow-lg transition-all hover:border-amber-300/60 hover:shadow-amber-500/20"
+              >
+                <span className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-amber-400/20 blur-2xl transition-transform group-hover:scale-125" />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl gradient-gold text-primary-foreground shadow-md">
+                  <Wallet className="h-6 w-6" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2 font-semibold">
+                    Mfumo wa Mhazini
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-200"><ShieldCheck className="h-3 w-3" />Salama</span>
+                  </span>
+                  <span className="block text-xs text-white/70">Rekodi sadaka, risiti za SMS, ripoti na mgao wa Konferensi</span>
+                </span>
+                <ArrowRight className="h-5 w-5 shrink-0 text-amber-200 transition-transform group-hover:translate-x-1" />
+              </Link>
             </div>
 
             <div className="shrink-0 flex gap-1 px-3 pt-3 overflow-x-auto">
