@@ -10,6 +10,7 @@
 - [ ] /rm/categories — Head Treasurer tu
 - [ ] /rm/reports — Excel/PDF, taarifa ya mwanachama
 - [ ] Ombi la kufuta (void) na idhini
+- [ ] Usibadilishe kurasa/vipengele vya zamani; kurasa za Mhazini ziige muonekano wa zamani (rangi, kadi, fonti)
 
 ## Zamani
 

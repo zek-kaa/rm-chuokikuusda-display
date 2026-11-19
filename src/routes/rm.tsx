@@ -34,18 +34,18 @@ function RmLayout() {
   ] as const;
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="bg-sidebar text-sidebar-foreground md:w-60 md:min-h-screen p-4">
-        <div className="mb-6 text-lg font-bold">RM Offerings</div>
+      <aside className="bg-background border-b md:border-b-0 md:border-r border-border md:w-60 md:min-h-screen p-4">
+        <div className="mb-6"><p className="text-xs text-muted-foreground">SDA Chuo Kikuu</p><p className="text-lg font-bold text-primary">RM Mhazini</p></div>
         <nav className="flex gap-1 overflow-x-auto md:flex-col">
           {links.filter((l) => l.show).map((l) => (
             <Link key={l.to} to={l.to} activeOptions={{ exact: true }}
-              className="whitespace-nowrap rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent"
-              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" }}>{l.label}</Link>
+              className="whitespace-nowrap rounded-md px-3 py-2 text-sm hover:bg-muted"
+              activeProps={{ className: "bg-primary/15 text-primary font-semibold" }}>{l.label}</Link>
           ))}
-          <Link to="/dashboard" className="whitespace-nowrap rounded-md px-3 py-2 text-sm opacity-70 hover:bg-sidebar-accent">← Dashboard yangu</Link>
+          <Link to="/dashboard" className="whitespace-nowrap rounded-md px-3 py-2 text-sm opacity-70 hover:bg-muted">← Dashboard yangu</Link>
         </nav>
       </aside>
-      <main className="flex-1 bg-muted/30 p-4 md:p-8"><Outlet /></main>
+      <main className="flex-1 bg-background p-4 md:p-8"><Outlet /></main>
     </div>
   );
 }

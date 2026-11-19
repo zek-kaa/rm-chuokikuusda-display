@@ -9,18 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { tzs } from "@/lib/rm/format";
-import { useTransactions, rangeFor, accessToken, useStaffRoles, perms, type TxRow } from "@/lib/rm/data";
+import { useTransactions, rangeFor, accessToken, useStaffRoles, perms } from "@/lib/rm/data";
 import { sendReceiptSms } from "@/lib/rm/offerings.functions";
-import { ReceiptDialog, type ReceiptData } from "@/components/rm/Receipt";
+import { ReceiptDialog, toReceipt, type ReceiptData } from "@/components/rm/Receipt";
 
 export const Route = createFileRoute("/rm/")({ component: RmDashboard });
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2, 200 70% 50%))", "hsl(var(--chart-3, 38 92% 50%))", "hsl(var(--chart-4, 280 60% 55%))", "hsl(var(--chart-5, 0 70% 55%))"];
-
-export function toReceipt(t: TxRow): ReceiptData {
-  return { receipt: t.receipt_number, date: t.transaction_date, name: t.members?.full_name ?? "", method: t.payment_method, total: Number(t.total_amount),
-    items: t.transaction_items.map((i) => ({ name: i.offering_categories?.name ?? "", amount: Number(i.amount) })) };
-}
 
 function RmDashboard() {
   const [preset, setPreset] = useState("month");

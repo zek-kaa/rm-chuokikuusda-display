@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { tzs } from "@/lib/rm/format";
 import jsPDF from "jspdf";
+import type { TxRow } from "@/lib/rm/data";
 
 export type ReceiptData = { receipt: string; date: string; name: string; phone?: string; method: string; items: { name: string; amount: number }[]; total: number };
 
@@ -48,3 +49,9 @@ export function ReceiptDialog({ r, onClose }: { r: ReceiptData | null; onClose: 
     </Dialog>
   );
 }
+
+export function toReceipt(t: TxRow): ReceiptData {
+  return { receipt: t.receipt_number, date: t.transaction_date, name: t.members?.full_name ?? "", method: t.payment_method, total: Number(t.total_amount),
+    items: t.transaction_items.map((i) => ({ name: i.offering_categories?.name ?? "", amount: Number(i.amount) })) };
+}
+
