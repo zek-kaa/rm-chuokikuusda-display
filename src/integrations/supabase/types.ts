@@ -41,6 +41,48 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          annual_goal: number | null
+          created_at: string
+          full_name: string
+          group_id: string | null
+          id: string
+          level: string | null
+          member_status: string
+          phone: string | null
+          total_contributed: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_goal?: number | null
+          created_at?: string
+          full_name?: string
+          group_id?: string | null
+          id: string
+          level?: string | null
+          member_status?: string
+          phone?: string | null
+          total_contributed?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_goal?: number | null
+          created_at?: string
+          full_name?: string
+          group_id?: string | null
+          id?: string
+          level?: string | null
+          member_status?: string
+          phone?: string | null
+          total_contributed?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
