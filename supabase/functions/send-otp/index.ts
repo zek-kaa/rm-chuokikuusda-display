@@ -73,9 +73,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send SMS via NextSMS
-    const nextsmsUsername = Deno.env.get("NEXTSMS_USERNAME")!;
-    const nextsmsPassword = Deno.env.get("NEXTSMS_PASSWORD")!;
+    // Send SMS via NextSMS. Credentials may be stored as separate username/password
+    // secrets or as a single NEXTSMS_AUTH_TOKEN holding Base64 of "username:password".
+    let nextsmsUsername = Deno.env.get("NEXTSMS_USERNAME") ?? "";
+    let nextsmsPassword = Deno.env.get("NEXTSMS_PASSWORD") ?? "";
+    const authToken = Deno.env.get("NEXTSMS_AUTH_TOKEN") ?? "";
+    if ((!nextsmsUsername || !nextsmsPassword) && authToken) {
+      try {
+        const decoded = atob(authToken);
+        const separator = decoded.indexOf(":");
+        if (separator > 0) {
+          nextsmsUsername = nextsmsUsername || decoded.slice(0, separator);
+          nextsmsPassword = nextsmsPassword || decoded.slice(separator + 1);
+        }
+      } catch {
+        // Invalid token; the missing-credentials check below will report it.
+      }
+    }
+    if (!nextsmsUsername || !nextsmsPassword) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Taarifa za NextSMS hazijakamilika." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     const basicAuth = btoa(`${nextsmsUsername}:${nextsmsPassword}`);
 
     // Sender ID lazima iwe imesajiliwa kwa networks zote (Airtel, Tigo, Halotel, TTCL, Zantel, Vodacom).
