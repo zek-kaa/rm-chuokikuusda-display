@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as GiveRouteImport } from './routes/give'
 import { Route as GuestDashboardRouteImport } from './routes/guest-dashboard'
+import { Route as RmRouteImport } from './routes/rm'
+import { Route as RmIndexRouteImport } from './routes/rm/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,44 +32,78 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GiveRoute = GiveRouteImport.update({
+  id: '/give',
+  path: '/give',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuestDashboardRoute = GuestDashboardRouteImport.update({
   id: '/guest-dashboard',
   path: '/guest-dashboard',
   getParentRoute: () => rootRouteImport,
+} as any)
+const RmRoute = RmRouteImport.update({
+  id: '/rm',
+  path: '/rm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RmIndexRoute = RmIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RmRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
+  '/rm': typeof RmRouteWithChildren
+  '/rm/': typeof RmIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
+  '/rm': typeof RmIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+  '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
+  '/rm': typeof RmRouteWithChildren
+  '/rm/': typeof RmIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/guest-dashboard'
+  fullPaths:
+    '/' | '/auth' | '/dashboard' | '/give' | '/guest-dashboard' | '/rm' | '/rm/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/guest-dashboard'
-  id: '__root__' | '/' | '/auth' | '/dashboard' | '/guest-dashboard'
+  to: '/' | '/auth' | '/dashboard' | '/give' | '/guest-dashboard' | '/rm'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/give'
+    | '/guest-dashboard'
+    | '/rm'
+    | '/rm/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+  GiveRoute: typeof GiveRoute
   GuestDashboardRoute: typeof GuestDashboardRoute
+  RmRoute: typeof RmRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/give': {
+      id: '/give'
+      path: '/give'
+      fullPath: '/give'
+      preLoaderRoute: typeof GiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guest-dashboard': {
       id: '/guest-dashboard'
       path: '/guest-dashboard'
@@ -99,14 +143,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuestDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rm': {
+      id: '/rm'
+      path: '/rm'
+      fullPath: '/rm'
+      preLoaderRoute: typeof RmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rm/': {
+      id: '/rm/'
+      path: '/'
+      fullPath: '/rm/'
+      preLoaderRoute: typeof RmIndexRouteImport
+      parentRoute: typeof RmRoute
+    }
   }
 }
+
+interface RmRouteChildren {
+  RmIndexRoute: typeof RmIndexRoute
+}
+
+const RmRouteChildren: RmRouteChildren = {
+  RmIndexRoute: RmIndexRoute,
+}
+
+const RmRouteWithChildren = RmRoute._addFileChildren(RmRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+  GiveRoute: GiveRoute,
   GuestDashboardRoute: GuestDashboardRoute,
+  RmRoute: RmRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
