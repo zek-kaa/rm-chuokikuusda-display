@@ -9,5 +9,6 @@
 - Signup creates Cloud Auth accounts only after an atomic private OTP claim, maps profiles by auth ID, and stores passwords in Cloud Auth; never recreate the imported custom credential/token tables or assign privileged roles from phone numbers.
 - Phone/password accounts use a deterministic internal email after SMS verification; user sign-in and privileged account creation use separate clients to preserve service identity, and the browser persists real access/refresh sessions.
 <!-- AGENT-MEMORY:BEGIN -->
+- Scope treasurer panel theme overrides to .treasury-panel and use shared semantic tokens so member pages remain visually unchanged.
 - Treasurer system lives under /rm (staff roles in user_roles: head_treasurer, assistant_treasurer, auditor; super_admin acts as head) and public giving at /give; offerings are written only via record_offering RPC so splits and receipt numbers stay atomic. Existing member pages stay untouched.
 <!-- AGENT-MEMORY:END -->

@@ -14,7 +14,14 @@ import { sendReceiptSms } from "@/lib/rm/offerings.functions";
 import { QuickAddMember } from "@/components/rm/QuickAddMember";
 import { ReceiptDialog, toReceipt, type ReceiptData } from "@/components/rm/Receipt";
 
-export const Route = createFileRoute("/rm/offerings/new")({ component: NewOffering });
+export const Route = createFileRoute("/rm/offerings/new")({ head: () => ({ meta: [
+  { title: "Record Offering | SDA Chuo Kikuu" },
+  { name: "description", content: "Record church offerings and issue member receipts." },
+  { property: "og:title", content: "Record Offering | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Record church offerings and issue member receipts." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: NewOffering });
 
 type M = { id: string; full_name: string; phone_number: string };
 
@@ -58,8 +65,8 @@ function NewOffering() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="text-2xl font-bold">Rekodi Sadaka</h1>
-      <Card><CardHeader><CardTitle className="text-base">Mwanachama</CardTitle></CardHeader><CardContent className="space-y-2">
+      <h1 className="treasury-page-heading text-2xl font-bold">Rekodi Sadaka</h1>
+      <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Mwanachama</CardTitle></CardHeader><CardContent className="space-y-2">
         {member ? <div className="flex items-center justify-between rounded-md bg-muted p-3">
           <span>{member.full_name} · {member.phone_number}</span><Button size="sm" variant="ghost" onClick={() => setMember(null)}>Badilisha</Button>
         </div> : <>
@@ -68,14 +75,14 @@ function NewOffering() {
           <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>+ Ongeza Mwanachama Mpya</Button>
         </>}
       </CardContent></Card>
-      <Card><CardContent className="grid gap-3 pt-6 sm:grid-cols-2">
+      <Card className="treasury-panel"><CardContent className="grid gap-3 pt-6 sm:grid-cols-2">
         <div><Label>Tarehe</Label><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
         <div><Label>Njia ya malipo</Label>
           <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={method} onChange={(e) => setMethod(e.target.value)}>
             {PAYMENT_METHODS.filter((m) => m !== "Online Portal").map((m) => <option key={m}>{m}</option>)}
           </select></div>
       </CardContent></Card>
-      <Card><CardHeader><CardTitle className="text-base">Makundi ya Sadaka</CardTitle></CardHeader><CardContent className="space-y-2">
+      <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Makundi ya Sadaka</CardTitle></CardHeader><CardContent className="space-y-2">
         {(cats.data ?? []).map((c) => <div key={c.id} className="flex items-center gap-3">
           <Label className="w-44" htmlFor={c.id}>{c.name}</Label>
           <Input id={c.id} inputMode="numeric" className="tabular-nums" placeholder="0" value={amounts[c.id] ?? ""} onChange={(e) => setAmounts({ ...amounts, [c.id]: e.target.value.replace(/\D/g, "") })} />

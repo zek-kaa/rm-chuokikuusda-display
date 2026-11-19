@@ -13,7 +13,14 @@ import { db, useCategories, accessToken, today } from "@/lib/rm/data";
 import { normalizeTzPhone, tzs, PAYMENT_METHODS } from "@/lib/rm/format";
 import { sendReceiptSms } from "@/lib/rm/offerings.functions";
 
-export const Route = createFileRoute("/rm/offerings/bulk-upload")({ component: Bulk });
+export const Route = createFileRoute("/rm/offerings/bulk-upload")({ head: () => ({ meta: [
+  { title: "Bulk Offering Upload | SDA Chuo Kikuu" },
+  { name: "description", content: "Upload and review church offerings from Excel." },
+  { property: "og:title", content: "Bulk Offering Upload | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Upload and review church offerings from Excel." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: Bulk });
 
 type Row = { name: string; phone: string; date: string; method: string; amounts: Record<string, number> };
 
@@ -77,8 +84,8 @@ function Bulk() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Pakia Sadaka kwa Excel</h1>
-      <Card><CardContent className="flex flex-wrap gap-3 pt-6">
+      <h1 className="treasury-page-heading text-2xl font-bold">Pakia Sadaka kwa Excel</h1>
+      <Card className="treasury-panel"><CardContent className="flex flex-wrap gap-3 pt-6">
         <Button variant="outline" onClick={template}>Pakua Template ya Excel (.xlsx)</Button>
         <label className="flex cursor-pointer items-center rounded-md border-2 border-dashed border-border px-4 py-2 text-sm"
           onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) onFile(f); }}>
@@ -88,12 +95,12 @@ function Bulk() {
       </CardContent></Card>
       {rows.length > 0 && <>
         <div className="grid gap-3 sm:grid-cols-4">
-          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Sahihi</p><p className="text-2xl font-bold">{valid.length}</p></CardContent></Card>
-          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Zenye makosa</p><p className="text-2xl font-bold text-destructive">{rows.length - valid.length}</p></CardContent></Card>
-          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Jumla</p><p className="text-2xl font-bold tabular-nums">{tzs(grand)}</p></CardContent></Card>
-          <Card><CardContent className="pt-6 text-xs">{list.map((c) => <div key={c.id} className="flex justify-between"><span>{c.code}</span><span className="tabular-nums">{tzs(valid.reduce((s, r) => s + (r.amounts[c.id] ?? 0), 0))}</span></div>)}</CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Sahihi</p><p className="treasury-page-heading text-2xl font-bold">{valid.length}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Zenye makosa</p><p className="text-2xl font-bold text-destructive">{rows.length - valid.length}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Jumla</p><p className="text-2xl font-bold tabular-nums">{tzs(grand)}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6 text-xs">{list.map((c) => <div key={c.id} className="flex justify-between"><span>{c.code}</span><span className="tabular-nums">{tzs(valid.reduce((s, r) => s + (r.amounts[c.id] ?? 0), 0))}</span></div>)}</CardContent></Card>
         </div>
-        <Card><CardContent className="overflow-x-auto pt-6">
+        <Card className="treasury-panel"><CardContent className="overflow-x-auto pt-6">
           <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Jina</th><th>Simu</th><th>Tarehe</th><th>Njia</th>{list.map((c) => <th key={c.id}>{c.code}</th>)}<th>Hali</th><th /></tr></thead>
             <tbody>{rows.map((r, i) => { const c = check(r); return (
               <tr key={i} className={`border-t ${c.errs.length ? "bg-destructive/10" : ""}`}>

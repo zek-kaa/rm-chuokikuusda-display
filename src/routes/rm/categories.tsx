@@ -11,7 +11,14 @@ import { toast } from "sonner";
 import { db, useCategories, useStaffRoles, perms, type Category } from "@/lib/rm/data";
 import { tzs } from "@/lib/rm/format";
 
-export const Route = createFileRoute("/rm/categories")({ component: Categories });
+export const Route = createFileRoute("/rm/categories")({ head: () => ({ meta: [
+  { title: "Offering Categories | SDA Chuo Kikuu" },
+  { name: "description", content: "Manage church offering categories and conference allocations." },
+  { property: "og:title", content: "Offering Categories | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Manage church offering categories and conference allocations." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: Categories });
 
 function Categories() {
   const cats = useCategories();
@@ -40,9 +47,9 @@ function Categories() {
   }
   return (
     <div className="space-y-4">
-      <div className="flex items-center"><h1 className="mr-auto text-2xl font-bold">Makundi ya Sadaka</h1>
+      <div className="treasury-page-heading flex flex-wrap items-center gap-3"><h1 className="mr-auto text-2xl font-bold text-church-blue">Makundi ya Sadaka</h1>
         <Button onClick={() => setEdit({ local_church_share: 100, conference_share: 0 })}>+ Ongeza</Button></div>
-      <Card><CardContent className="overflow-x-auto pt-6">
+      <Card className="treasury-panel"><CardContent className="overflow-x-auto pt-6">
         <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Jina</th><th>Code</th><th>Kanisa %</th><th>Konferensi %</th><th>Jumla</th><th>Hai</th><th /></tr></thead>
           <tbody>{(cats.data ?? []).map((c) => <tr key={c.id} className="border-t">
             <td className="py-2">{c.name}</td><td>{c.code}</td><td>{c.local_church_share}</td><td>{c.conference_share}</td>

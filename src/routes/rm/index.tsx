@@ -13,9 +13,16 @@ import { useTransactions, rangeFor, accessToken, useStaffRoles, perms } from "@/
 import { sendReceiptSms } from "@/lib/rm/offerings.functions";
 import { ReceiptDialog, toReceipt, type ReceiptData } from "@/components/rm/Receipt";
 
-export const Route = createFileRoute("/rm/")({ component: RmDashboard });
+export const Route = createFileRoute("/rm/")({ head: () => ({ meta: [
+  { title: "Treasurer Dashboard | SDA Chuo Kikuu" },
+  { name: "description", content: "Church offerings, collection totals and recent receipts." },
+  { property: "og:title", content: "Treasurer Dashboard | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Church offerings, collection totals and recent receipts." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: RmDashboard });
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2, 200 70% 50%))", "hsl(var(--chart-3, 38 92% 50%))", "hsl(var(--chart-4, 280 60% 55%))", "hsl(var(--chart-5, 0 70% 55%))"];
+const COLORS = ["hsl(var(--gold))", "hsl(var(--emerald))", "hsl(var(--church-blue-light))", "hsl(var(--silver))", "hsl(var(--bronze))"];
 
 function RmDashboard() {
   const [preset, setPreset] = useState("month");
@@ -51,8 +58,8 @@ function RmDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="mr-auto text-2xl font-bold">Dashboard ya Fedha</h1>
+      <div className="treasury-page-heading flex flex-wrap items-center gap-2">
+        <h1 className="mr-auto text-2xl font-bold text-church-blue">Dashboard ya Fedha</h1>
         {[["today", "Leo"], ["7d", "Siku 7 / Sabato"], ["month", "Mwezi huu"], ["year", "Mwaka huu"], ["custom", "Chagua"]].map(([k, l]) => (
           <Button key={k} size="sm" variant={preset === k ? "default" : "outline"} onClick={() => setPreset(k)}>{l}</Button>
         ))}
@@ -62,26 +69,26 @@ function RmDashboard() {
         </div>}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi title="Jumla ya Makusanyo" value={tzs(total)} />
-        <Kpi title="Inabaki Kanisani" value={tzs(local)} />
-        <Kpi title="Deni kwa Konferensi" value={tzs(conf)} />
+        <Kpi title="Jumla ya Makusanyo" value={tzs(total)} tone="gold" />
+        <Kpi title="Inabaki Kanisani" value={tzs(local)} tone="emerald" />
+        <Kpi title="Deni kwa Konferensi" value={tzs(conf)} tone="silver" />
         <Kpi title="Risiti / SMS" value={`${live.length} risiti`} sub={`${sent} Zimetumwa / ${failed} Zimeshindwa`} />
       </div>
       {isLoading ? <p className="text-muted-foreground">Inapakia...</p> : <div className="grid gap-4 lg:grid-cols-2">
-        <Card><CardHeader><CardTitle className="text-base">Kwa Kundi</CardTitle></CardHeader><CardContent className="h-64">
-          <ResponsiveContainer><BarChart data={byCat}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" fontSize={11} /><YAxis fontSize={11} /><Tooltip formatter={(v: number) => tzs(v)} /><Bar dataKey="value" fill={COLORS[0]} /></BarChart></ResponsiveContainer>
+        <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Kwa Kundi</CardTitle></CardHeader><CardContent className="h-64">
+          <ResponsiveContainer><BarChart data={byCat}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="name" fontSize={11} stroke="hsl(var(--muted-foreground))" /><YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" /><Tooltip contentStyle={{ background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))", borderColor: "hsl(var(--border))" }} formatter={(v: number) => tzs(v)} /><Bar dataKey="value" fill={COLORS[0]} /></BarChart></ResponsiveContainer>
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-base">Mgawanyo wa Makundi</CardTitle></CardHeader><CardContent className="h-64">
-          <ResponsiveContainer><PieChart><Pie data={byCat} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label>{byCat.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={(v: number) => tzs(v)} /></PieChart></ResponsiveContainer>
+        <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Mgawanyo wa Makundi</CardTitle></CardHeader><CardContent className="h-64">
+          <ResponsiveContainer><PieChart><Pie data={byCat} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label>{byCat.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))", borderColor: "hsl(var(--border))" }} formatter={(v: number) => tzs(v)} /></PieChart></ResponsiveContainer>
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-base">Mwenendo wa Makusanyo</CardTitle></CardHeader><CardContent className="h-64">
-          <ResponsiveContainer><AreaChart data={trend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" fontSize={11} /><YAxis fontSize={11} /><Tooltip formatter={(v: number) => tzs(v)} /><Area dataKey="value" stroke={COLORS[0]} fill={COLORS[0]} fillOpacity={0.25} /></AreaChart></ResponsiveContainer>
+        <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Mwenendo wa Makusanyo</CardTitle></CardHeader><CardContent className="h-64">
+          <ResponsiveContainer><AreaChart data={trend}><CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /><XAxis dataKey="date" fontSize={11} stroke="hsl(var(--muted-foreground))" /><YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" /><Tooltip contentStyle={{ background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))", borderColor: "hsl(var(--border))" }} formatter={(v: number) => tzs(v)} /><Area dataKey="value" stroke={COLORS[0]} fill={COLORS[0]} fillOpacity={0.25} /></AreaChart></ResponsiveContainer>
         </CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-base">Njia za Malipo</CardTitle></CardHeader><CardContent className="h-64">
-          <ResponsiveContainer><PieChart><Pie data={byMethod} dataKey="value" nameKey="name" outerRadius={90} label>{byMethod.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip formatter={(v: number) => tzs(v)} /></PieChart></ResponsiveContainer>
+        <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Njia za Malipo</CardTitle></CardHeader><CardContent className="h-64">
+          <ResponsiveContainer><PieChart><Pie data={byMethod} dataKey="value" nameKey="name" outerRadius={90} label>{byMethod.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: "hsl(var(--popover))", color: "hsl(var(--popover-foreground))", borderColor: "hsl(var(--border))" }} formatter={(v: number) => tzs(v)} /></PieChart></ResponsiveContainer>
         </CardContent></Card>
       </div>}
-      <Card><CardHeader><CardTitle className="text-base">Miamala ya Karibuni</CardTitle></CardHeader><CardContent className="space-y-2">
+      <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Miamala ya Karibuni</CardTitle></CardHeader><CardContent className="space-y-2">
         {live.slice(0, 10).map((t) => (
           <div key={t.id} className="flex flex-wrap items-center gap-2 border-b pb-2 text-sm">
             <span className="font-mono">{t.receipt_number}</span>
@@ -99,6 +106,7 @@ function RmDashboard() {
   );
 }
 
-function Kpi({ title, value, sub }: { title: string; value: string; sub?: string }) {
-  return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{title}</p><p className="text-2xl font-bold tabular-nums">{value}</p>{sub && <p className="text-xs text-muted-foreground">{sub}</p>}</CardContent></Card>;
+function Kpi({ title, value, sub, tone = "gold" }: { title: string; value: string; sub?: string; tone?: "gold" | "emerald" | "silver" }) {
+  const accents = { gold: "text-gold", emerald: "text-emerald-light", silver: "text-silver" };
+  return <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{title}</p><p className={`break-words text-xl font-bold tabular-nums ${accents[tone]}`}>{value}</p>{sub && <p className="text-xs text-muted-foreground">{sub}</p>}</CardContent></Card>;
 }

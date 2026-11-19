@@ -1,5 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { useStaffRoles, perms } from "@/lib/rm/data";
+import { ArrowLeft, ChartNoAxesCombined, FileSpreadsheet, LayoutDashboard, List, PlusCircle, Wallet } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/rm")({
   ssr: false,
@@ -26,26 +28,29 @@ function RmLayout() {
     </div>
   );
   const links = [
-    { to: "/rm", label: "Dashboard", show: true },
-    { to: "/rm/offerings/new", label: "Rekodi Sadaka", show: p.write },
-    { to: "/rm/offerings/bulk-upload", label: "Pakia Excel", show: p.write },
-    { to: "/rm/reports", label: "Ripoti & Miamala", show: true },
-    { to: "/rm/categories", label: "Makundi ya Sadaka", show: p.head },
+    { to: "/rm", label: "Dashboard", icon: LayoutDashboard, show: true },
+    { to: "/rm/offerings/new", label: "Rekodi Sadaka", icon: PlusCircle, show: p.write },
+    { to: "/rm/offerings/bulk-upload", label: "Pakia Excel", icon: FileSpreadsheet, show: p.write },
+    { to: "/rm/reports", label: "Ripoti & Miamala", icon: ChartNoAxesCombined, show: true },
+    { to: "/rm/categories", label: "Makundi ya Sadaka", icon: List, show: p.head },
   ] as const;
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="bg-background border-b md:border-b-0 md:border-r border-border md:w-60 md:min-h-screen p-4">
-        <div className="mb-6"><p className="text-xs text-muted-foreground">SDA Chuo Kikuu</p><p className="text-lg font-bold text-primary">RM Mhazini</p></div>
-        <nav className="flex gap-1 overflow-x-auto md:flex-col">
+      <aside className="gradient-hero shrink-0 border-b border-gold/30 p-4 text-primary-foreground md:min-h-screen md:w-60 md:border-b-0 md:border-r">
+        <div className="mb-6 flex items-center gap-3 border-b border-primary-foreground/15 pb-5">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg gradient-gold text-church-blue-dark"><Wallet className="h-5 w-5" /></span>
+          <div><p className="text-xs text-primary-foreground/70">SDA Chuo Kikuu</p><p className="text-lg font-bold text-gold-light">RM Mhazini</p></div>
+        </div>
+        <nav aria-label="Treasurer navigation" className="flex gap-1 overflow-x-auto md:flex-col">
           {links.filter((l) => l.show).map((l) => (
-            <Link key={l.to} to={l.to} activeOptions={{ exact: true }}
-              className="whitespace-nowrap rounded-md px-3 py-2 text-sm hover:bg-muted"
-              activeProps={{ className: "bg-primary/15 text-primary font-semibold" }}>{l.label}</Link>
+            <Button asChild key={l.to} variant="ghost" className="h-10 justify-start text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground">
+              <Link to={l.to} activeOptions={{ exact: true }} activeProps={{ className: "bg-gold/20 text-gold-light font-semibold" }}><l.icon className="h-4 w-4" />{l.label}</Link>
+            </Button>
           ))}
-          <Link to="/dashboard" className="whitespace-nowrap rounded-md px-3 py-2 text-sm opacity-70 hover:bg-muted">← Dashboard yangu</Link>
+          <Button asChild variant="ghost" className="h-10 justify-start text-primary-foreground/65 hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/dashboard"><ArrowLeft className="h-4 w-4" />Dashboard yangu</Link></Button>
         </nav>
       </aside>
-      <main className="flex-1 bg-background p-4 md:p-8"><Outlet /></main>
+      <main className="min-w-0 flex-1 bg-background p-4 md:p-8"><Outlet /></main>
     </div>
   );
 }

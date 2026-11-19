@@ -13,7 +13,14 @@ import { db, useTransactions, useCategories, rangeFor, useStaffRoles, perms, typ
 import { tzs, PAYMENT_METHODS } from "@/lib/rm/format";
 import { ReceiptDialog, toReceipt, type ReceiptData } from "@/components/rm/Receipt";
 
-export const Route = createFileRoute("/rm/reports")({ component: Reports });
+export const Route = createFileRoute("/rm/reports")({ head: () => ({ meta: [
+  { title: "Treasurer Reports | SDA Chuo Kikuu" },
+  { name: "description", content: "Church offering reports, transactions and audit history." },
+  { property: "og:title", content: "Treasurer Reports | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Church offering reports, transactions and audit history." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: Reports });
 
 const sel = "h-10 rounded-md border border-input bg-background px-2 text-sm";
 
@@ -82,8 +89,8 @@ function Reports() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">Ripoti & Miamala</h1>
-      <Card><CardContent className="flex flex-wrap gap-2 pt-6">
+      <h1 className="treasury-page-heading text-2xl font-bold">Ripoti & Miamala</h1>
+      <Card className="treasury-panel"><CardContent className="flex flex-wrap gap-2 pt-6">
         <Input type="date" className="w-40" value={from} onChange={(e) => setRange([e.target.value, to])} />
         <Input type="date" className="w-40" value={to} onChange={(e) => setRange([from, e.target.value])} />
         <select className={sel} value={cat} onChange={(e) => setCat(e.target.value)}><option value="">Makundi yote</option>{(cats.data ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
@@ -96,7 +103,7 @@ function Reports() {
           <Button variant="outline" onClick={statement}>Taarifa ya Mwanachama</Button>
         </div>
       </CardContent></Card>
-      <Card><CardContent className="overflow-x-auto pt-6">
+      <Card className="treasury-panel"><CardContent className="overflow-x-auto pt-6">
         <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Risiti</th><th>Tarehe</th><th>Mwanachama</th><th>Njia</th><th>Kiasi</th><th>Hali</th><th>SMS</th><th /></tr></thead>
           <tbody>{rows.map((t) => <tr key={t.id} className="border-t">
             <td className="py-2 font-mono">{t.receipt_number}</td><td>{t.transaction_date}</td><td>{t.members?.full_name}</td><td>{t.payment_method}</td>
@@ -110,7 +117,7 @@ function Reports() {
             </td></tr>)}</tbody></table>
         {!rows.length && <p className="text-sm text-muted-foreground">Hakuna miamala.</p>}
       </CardContent></Card>
-      {logs.data && logs.data.length > 0 && <Card><CardHeader><CardTitle className="text-base">Kumbukumbu za Ukaguzi</CardTitle></CardHeader><CardContent className="space-y-1 text-xs">
+      {logs.data && logs.data.length > 0 && <Card className="treasury-panel"><CardHeader><CardTitle className="text-base">Kumbukumbu za Ukaguzi</CardTitle></CardHeader><CardContent className="space-y-1 text-xs">
         {logs.data.map((l) => <div key={l.id} className="flex gap-3 border-b py-1"><span className="text-muted-foreground">{new Date(l.created_at).toLocaleString()}</span><span>{l.action}</span><span className="truncate">{JSON.stringify(l.details)}</span></div>)}
       </CardContent></Card>}
       <ReceiptDialog r={receipt} onClose={() => setReceipt(null)} />
