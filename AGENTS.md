@@ -8,3 +8,6 @@
 - Normalize generated browser Cloud environment reads to dot notation in the Vite transform so the preview bundler injects public configuration without editing generated integration files.
 - Signup creates Cloud Auth accounts only after an atomic private OTP claim, maps profiles by auth ID, and stores passwords in Cloud Auth; never recreate the imported custom credential/token tables or assign privileged roles from phone numbers.
 - Phone/password accounts use a deterministic internal email after SMS verification; user sign-in and privileged account creation use separate clients to preserve service identity, and the browser persists real access/refresh sessions.
+<!-- AGENT-MEMORY:BEGIN -->
+- Treasurer system lives under /rm (staff roles in user_roles: head_treasurer, assistant_treasurer, auditor; super_admin acts as head) and public giving at /give; offerings are written only via record_offering RPC so splits and receipt numbers stay atomic. Existing member pages stay untouched.
+<!-- AGENT-MEMORY:END -->

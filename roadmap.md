@@ -1,16 +1,16 @@
 # Tasks
 
 ## RM Offerings System (kutoka faili la maelezo)
-- [ ] Database: members, offering_categories (seed 4), transactions, transaction_items, audit_logs, vyeo vya Mhazini/Msaidizi/Mkaguzi
-- [ ] /give — mwanachama kutoa sadaka bila password + risiti
-- [ ] SMS ya risiti kupitia NextSMS (+ Resend)
-- [ ] /rm dashboard: KPI, chati, miamala ya karibuni
-- [ ] /rm/offerings/new — kurekodi sadaka moja
-- [ ] /rm/offerings/bulk-upload — Excel
-- [ ] /rm/categories — Head Treasurer tu
-- [ ] /rm/reports — Excel/PDF, taarifa ya mwanachama
-- [ ] Ombi la kufuta (void) na idhini
-- [ ] Usibadilishe kurasa/vipengele vya zamani; kurasa za Mhazini ziige muonekano wa zamani (rangi, kadi, fonti)
+- [x] Database: members, offering_categories (seed 4), transactions, transaction_items, audit_logs, vyeo vya Mhazini/Msaidizi/Mkaguzi
+- [x] /give — mwanachama kutoa sadaka bila password + risiti
+- [x] SMS ya risiti kupitia NextSMS (+ Resend)
+- [x] /rm dashboard: KPI, chati, miamala ya karibuni
+- [x] /rm/offerings/new — kurekodi sadaka moja
+- [x] /rm/offerings/bulk-upload — Excel
+- [x] /rm/categories — Head Treasurer tu
+- [x] /rm/reports — Excel/PDF, taarifa ya mwanachama
+- [x] Ombi la kufuta (void) na idhini
+- [x] Usibadilishe kurasa/vipengele vya zamani; kurasa za Mhazini ziige muonekano wa zamani (rangi, kadi, fonti)
 
 ## Zamani
 

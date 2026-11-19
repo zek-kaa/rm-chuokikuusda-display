@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -415,6 +416,7 @@ const Dashboard = () => {
                 <p className="text-white/80 capitalize text-sm sm:text-base">
 Member • Chuo Kikuu SDA Church
                 </p>
+                {isAdmin && <Link to="/rm" className="mt-2 inline-block rounded-full gradient-gold px-3 py-1 text-xs font-semibold text-primary-foreground">Fungua Mfumo wa Mhazini →</Link>}
               </div>
             </div>
 
