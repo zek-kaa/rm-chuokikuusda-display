@@ -1,17 +1,15 @@
+import { useEffect } from "react";
+import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-  type ErrorComponentProps,
-} from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import PWAGate from "@/components/PWAGate";
+import { registerServiceWorker } from "@/lib/pwa";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+
+const queryClient = new QueryClient();
 
 function NotFoundComponent() {
   return (
@@ -35,82 +33,59 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
-  console.error(error);
-  const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRoute({
   head: () => ({
-    // Replace these placeholders with the app's name and description when first building the app.
-    // Each content route, / included, must still set its own head(). Never add og:image or
-    // twitter:image here: every page without its own would inherit the root's preview image.
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RM Chuokikuusda" },
-      { name: "description", content: "RM Chuokikuusda" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "RM Chuokikuusda" },
-      { property: "og:description", content: "RM Chuokikuusda" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display&display=swap",
+      },
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/sdaLogo.png" },
     ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var p=new URLSearchParams(location.search);var standalone=(window.navigator&&window.navigator.standalone===true)||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: fullscreen)').matches)||(window.matchMedia&&window.matchMedia('(display-mode: minimal-ui)').matches);if(p.get('pwa')==='1'||standalone){document.documentElement.classList.add('pwa-booting');}}catch(e){}})();`,
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `#pwa-boot-splash{display:none;}html.pwa-booting body{background:#05070d;}html.pwa-booting #app-root{visibility:hidden;}html.pwa-booting #pwa-boot-splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#1a2238 0%,#0b0f1a 60%,#05070d 100%);color:white;text-align:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:2rem;}html.pwa-booting #pwa-boot-splash img{width:128px;height:128px;margin-bottom:24px;border-radius:24px;}html.pwa-booting #pwa-boot-splash h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:0;}`,
+          }}
+        />
+        <meta name="theme-color" content="#0b0f1a" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="SDA Contribute" />
         <HeadContent />
       </head>
       <body>
+        <div id="pwa-boot-splash" aria-hidden="true">
+          <img src="/sdaLogo.png" alt="" />
+          <h1>Chuo Kikuu SDA Church</h1>
+        </div>
         {children}
         <Scripts />
       </body>
@@ -119,12 +94,22 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-    </QueryClientProvider>
+    <div id="app-root">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <PWAGate>
+              <Outlet />
+            </PWAGate>
+          </TooltipProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </div>
   );
 }

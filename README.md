@@ -1,12 +1,12 @@
-# RM Chuokikuusda Display
+# RM Showcase
 
-nitengenezee simple page just desplay the word RM Chuokikuusda
+just a simple page to desplay RM
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/7dd83804-40f8-446e-97a0-c0eb9e70c288).
+Continue developing this project in the [Lovable editor](https://lovable.dev/).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.

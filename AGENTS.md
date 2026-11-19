@@ -1,30 +1,10 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
+ # Project architecture
 
-## What Lovable manages
-
-Rules outside this block are the project's own. Change the pieces below in
-Lovable, not by hand. With the [Lovable MCP](https://mcp.lovable.dev)
-connected, `send_message` asks Lovable to do it; otherwise ask the user to
-use the editor.
-
-- **Database.** Do not add or edit `supabase/migrations/` or `drizzle/`.
-  Ask Lovable to change the schema.
-- **Generated files.** Do not edit a file whose header says it is automatically
-  generated.
-- **AI gateway.** Keep model calls on Lovable's gateway, and keep
-  `LOVABLE_API_KEY` out of browser code.
-- **Connectors.** Lovable provides native connectors. `list_connectors` shows
-  which are enabled; `add_connector` only returns the dashboard link. When a
-  connector is enabled, calls go through the connector gateway and need
-  `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
-  own key and store it in Secrets.
-- **Secrets.** Lovable manages them. Do not put secret values in the repo.
-<!-- LOVABLE:END -->
+- Keep OTP codes service-only with RLS and no browser grants; signup codes must not be exposed through the public Data API.
+- Extract authentication error messages from function response bodies so users receive the actual failure rather than an SDK status message.
+- Signup SMS uses a TanStack server function and a server-only NextSMS client; credentials remain server-side and private OTP storage stays compatible with the imported verification flow.
+- Password creation opens in a controlled drawer after a server-side OTP check; the final signup operation must revalidate and consume the code to prevent bypassing verification.
+- Website and installed-app signup popups share SignupPasswordDrawer so their OTP screens cannot drift into displaying password fields before confirmation.
+- Normalize generated browser Cloud environment reads to dot notation in the Vite transform so the preview bundler injects public configuration without editing generated integration files.
+- Signup creates Cloud Auth accounts only after an atomic private OTP claim, maps profiles by auth ID, and stores passwords in Cloud Auth; never recreate the imported custom credential/token tables or assign privileged roles from phone numbers.
+- Phone/password accounts use a deterministic internal email after SMS verification; user sign-in and privileged account creation use separate clients to preserve service identity, and the browser persists real access/refresh sessions.

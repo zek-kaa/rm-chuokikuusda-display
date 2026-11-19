@@ -1,25 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Index from "@/pages/Index";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "RM Chuokikuusda" },
-      { name: "description", content: "RM Chuokikuusda" },
-      { property: "og:title", content: "RM Chuokikuusda" },
-      { property: "og:description", content: "RM Chuokikuusda" },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () => ({ meta: [
+    { title: "SDA Chuo Kikuu | Resource Mobilization" },
+    { name: "description", content: "Michango na maendeleo ya Kanisa la SDA Chuo Kikuu." },
+    { property: "og:title", content: "SDA Chuo Kikuu | Resource Mobilization" },
+    { property: "og:description", content: "Michango na maendeleo ya Kanisa la SDA Chuo Kikuu." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: Index,
 });
-
-function Index() {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <h1 className="text-center text-5xl font-bold tracking-tight text-foreground md:text-7xl">
-        RM Chuokikuusda
-      </h1>
-    </main>
-  );
-}

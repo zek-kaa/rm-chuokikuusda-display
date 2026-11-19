@@ -1,0 +1,247 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+function normalizePhone(phone: string): string {
+  let cleaned = phone.replace(/\D/g, "");
+  if (cleaned.startsWith("0")) {
+    cleaned = "255" + cleaned.slice(1);
+  }
+  if (!cleaned.startsWith("255")) {
+    cleaned = "255" + cleaned;
+  }
+  return cleaned;
+}
+
+const PBKDF2_ITERATIONS = 210_000;
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+async function createPasswordHash(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations: PBKDF2_ITERATIONS },
+    key,
+    256,
+  );
+  return ["pbkdf2_sha256", String(PBKDF2_ITERATIONS), bytesToBase64(salt), bytesToBase64(new Uint8Array(bits))].join("$");
+}
+
+function generateToken(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let token = "";
+  const array = new Uint8Array(64);
+  crypto.getRandomValues(array);
+  for (const byte of array) {
+    token += chars[byte % chars.length];
+  }
+  return token;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { phone, otp, password, full_name, role } = await req.json();
+
+    // Whitelist roles that can be set from client during signup
+    const ALLOWED_SIGNUP_ROLES = new Set(["member", "student", "church_member"]);
+    // Normalize: PWA passes the category id; map to canonical profile role
+    const normalizeRole = (r: unknown): string | null => {
+      if (typeof r !== "string") return null;
+      const v = r.trim().toLowerCase();
+      if (v === "church_member") return "member";
+      if (ALLOWED_SIGNUP_ROLES.has(v)) return v;
+      return null;
+    };
+    const requestedRole = normalizeRole(role);
+
+    if (!phone || !otp) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Phone and OTP are required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (typeof password !== "string" || password.length < 8 || password.length > 128) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Password lazima iwe na herufi 8 hadi 128." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Find valid OTP
+    const { data: otpRecord, error: otpError } = await supabase
+      .from("otp_codes")
+      .select("*")
+      .eq("phone", normalizedPhone)
+      .eq("otp", otp)
+      .eq("verified", false)
+      .gte("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (otpError || !otpRecord) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Invalid or expired OTP" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Mark OTP as verified
+    await supabase
+      .from("otp_codes")
+      .update({ verified: true })
+      .eq("id", otpRecord.id);
+
+    // Find or create user
+    let { data: user } = await supabase
+      .from("users")
+      .select("*")
+      .eq("phone", normalizedPhone)
+      .maybeSingle();
+
+    if (!user) {
+      const { data: newUser, error: userError } = await supabase
+        .from("users")
+        .insert({ phone: normalizedPhone })
+        .select()
+        .single();
+
+      if (userError) {
+        console.error("User create error:", userError);
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to create user" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      user = newUser;
+    }
+
+    // Generate access token (valid 7 days)
+    const accessToken = generateToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Find or create profile
+    let { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      const { data: newProfile, error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: user.id,
+          phone: normalizedPhone,
+          full_name: full_name || "",
+          role: requestedRole || "member",
+          access_token: accessToken,
+          token_expires_at: expiresAt,
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error("Profile create error:", profileError);
+        return new Response(
+          JSON.stringify({ success: false, error: "Failed to create profile" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      profile = newProfile;
+    } else {
+      // Update token and optionally full_name
+      const updateData: Record<string, unknown> = {
+        access_token: accessToken,
+        token_expires_at: expiresAt,
+      };
+      if (full_name) {
+        updateData.full_name = full_name;
+      }
+
+      const { data: updatedProfile } = await supabase
+        .from("profiles")
+        .update(updateData)
+        .eq("id", profile.id)
+        .select()
+        .single();
+
+      if (updatedProfile) {
+        profile = updatedProfile;
+      }
+    }
+
+    const passwordHash = await createPasswordHash(password);
+    const { error: credentialError } = await supabase
+      .from("user_credentials")
+      .upsert(
+        { user_id: user.id, password_hash: passwordHash },
+        { onConflict: "user_id" },
+      );
+
+    if (credentialError) {
+      console.error("Credential save error:", credentialError);
+      return new Response(
+        JSON.stringify({ success: false, error: "Imeshindwa kuhifadhi password. Tafadhali jaribu tena." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Super admin enforcement by phone
+    const SUPER_ADMIN_PHONES = new Set(["255752519974", "255712686839"]);
+    if (SUPER_ADMIN_PHONES.has(normalizedPhone) && profile) {
+      await supabase.from("profiles").update({ role: "super_admin" }).eq("id", profile.id);
+      profile.role = "super_admin";
+      await supabase
+        .from("user_roles")
+        .upsert({ user_id: profile.id, role: "super_admin" }, { onConflict: "user_id,role" });
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        access_token: accessToken,
+        expires_at: expiresAt,
+        user_id: user.id,
+        user: {
+          id: user.id,
+          phone: normalizedPhone,
+          full_name: profile?.full_name || "",
+          role: profile?.role || "member",
+        },
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("verify-otp error:", err);
+    return new Response(
+      JSON.stringify({ success: false, error: "Internal server error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

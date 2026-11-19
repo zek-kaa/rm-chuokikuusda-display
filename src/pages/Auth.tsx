@@ -1,0 +1,303 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
+import { signIn, sendOtp, confirmOtp, verifyOtp, normalizePhone, validateNewPassword } from "@/lib/auth";
+import { Phone, Shield, User, Loader2, LockKeyhole } from "lucide-react";
+
+type SignupStep = "phone" | "otp";
+
+const Auth = () => {
+  const [signupStep, setSignupStep] = useState<SignupStep>("phone");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [passwordDrawerOpen, setPasswordDrawerOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignIn = async () => {
+    setErrorMsg(null);
+    if (!phone.trim()) {
+      setErrorMsg("Tafadhali ingiza namba ya simu");
+      return;
+    }
+    if (!password) {
+      setErrorMsg("Tafadhali ingiza password yako");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signIn(phone, password);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Imeshindwa kuingia");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    setErrorMsg(null);
+    if (!phone.trim()) {
+      setErrorMsg("Tafadhali ingiza namba ya simu");
+      return;
+    }
+    if (!fullName.trim()) {
+      setErrorMsg("Tafadhali ingiza jina lako kamili");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await sendOtp(phone, fullName);
+      setSignupStep("otp");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "Imeshindwa kutuma OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmOtp = async () => {
+    setErrorMsg(null);
+    if (!otp.trim() || otp.length !== 6) {
+      setErrorMsg("Tafadhali ingiza OTP yenye tarakimu 6");
+      return;
+    }
+    setLoading(true);
+    try {
+      await confirmOtp(phone, otp);
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordDrawerOpen(true);
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "OTP si sahihi au imekwisha muda");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setErrorMsg(null);
+    const passwordError = validateNewPassword(password, confirmPassword);
+    if (passwordError) {
+      setErrorMsg(passwordError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await verifyOtp(phone, otp, password, fullName);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setErrorMsg(err?.message || "OTP si sahihi au imekwisha muda");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetSignup = () => {
+    setPasswordDrawerOpen(false);
+    setSignupStep("phone");
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+    setErrorMsg(null);
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8">
+      <Card className="w-full max-w-md border-border shadow-lg">
+        <CardHeader className="text-center space-y-2">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+            <Shield className="h-7 w-7 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold text-foreground">Karibu</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            {mode === "signin"
+              ? "Ingiza namba yako ya simu kuingia"
+              : signupStep === "phone"
+              ? "Jisajili kwa namba yako ya simu"
+              : "Ingiza OTP kisha tengeneza password yako"}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <Tabs
+            value={mode}
+            onValueChange={(v) => {
+              setMode(v as "signin" | "signup");
+              resetSignup();
+            }}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="signin">Ingia</TabsTrigger>
+              <TabsTrigger value="signup">Jisajili</TabsTrigger>
+            </TabsList>
+
+            {errorMsg && !passwordDrawerOpen && (
+              <div className="mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive text-center">
+                {errorMsg}
+              </div>
+            )}
+
+            {/* SIGN IN - Phone + password */}
+            <TabsContent value="signin" className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Namba ya Simu</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="tel"
+                    placeholder="0712345678 au 255712345678"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="pl-10"
+                    disabled={loading}
+                    autoComplete="tel"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Password</label>
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="password"
+                    placeholder="Ingiza password yako"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10"
+                    disabled={loading}
+                    autoComplete="current-password"
+                    maxLength={128}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSignIn} className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Ingia
+              </Button>
+            </TabsContent>
+
+            {/* SIGN UP - Phone + OTP */}
+            <TabsContent value="signup" className="space-y-4">
+              {signupStep === "phone" ? (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Jina Kamili</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Jina lako kamili"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        className="pl-10"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Namba ya Simu</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="tel"
+                        placeholder="0712345678 au 255712345678"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="pl-10"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                  <Button onClick={handleSendOtp} className="w-full" disabled={loading}>
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Tuma OTP
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Namba ya OTP</label>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="Ingiza OTP yenye tarakimu 6"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className="text-center text-2xl tracking-[0.5em] font-mono"
+                      disabled={loading}
+                    />
+                    <p className="text-xs text-muted-foreground text-center">
+                      OTP imetumwa kwa {normalizePhone(phone)}
+                    </p>
+                  </div>
+                  <Button onClick={handleConfirmOtp} className="w-full bg-gold text-accent-foreground hover:bg-gold-dark" disabled={loading}>
+                    {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Thibitisha OTP
+                  </Button>
+                  <Button variant="ghost" onClick={resetSignup} className="w-full" disabled={loading}>
+                    Rudi nyuma
+                  </Button>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      <Drawer open={passwordDrawerOpen} onOpenChange={(open) => {
+        if (!loading) {
+          setPasswordDrawerOpen(open);
+          setErrorMsg(null);
+        }
+      }}>
+        <DrawerContent className="max-h-[90dvh]">
+          <div className="mx-auto w-full max-w-md overflow-y-auto px-4 pb-8">
+            <DrawerHeader className="px-0 text-center sm:text-center">
+              <DrawerTitle>Tengeneza Password</DrawerTitle>
+              <DrawerDescription>OTP imethibitishwa</DrawerDescription>
+            </DrawerHeader>
+            <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void handleVerifyOtp(); }}>
+              {errorMsg && <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">{errorMsg}</div>}
+              <div className="space-y-2">
+                <label htmlFor="new-password" className="text-sm font-medium text-foreground">Password</label>
+                <div className="relative">
+                  <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input id="new-password" type="password" placeholder="Angalau herufi 8" value={password}
+                    onChange={(event) => setPassword(event.target.value)} className="pl-10" disabled={loading}
+                    autoComplete="new-password" minLength={8} maxLength={128} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="confirm-password" className="text-sm font-medium text-foreground">Thibitisha Password</label>
+                <Input id="confirm-password" type="password" placeholder="Andika password tena" value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)} disabled={loading}
+                  autoComplete="new-password" minLength={8} maxLength={128} />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Hifadhi Password na Ingia
+              </Button>
+              <Button type="button" variant="ghost" className="w-full" disabled={loading}
+                onClick={() => { setPasswordDrawerOpen(false); setErrorMsg(null); }}>Rudi nyuma</Button>
+            </form>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </div>
+  );
+};
+
+export default Auth;
