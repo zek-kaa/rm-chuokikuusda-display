@@ -1,9 +1,9 @@
 # Tasks
 
 ## Treasurer appearance
-- [ ] Match all treasurer pages to the existing blue, gold and emerald appearance without changing functionality.
-- [ ] Reorganize the Admin Panel treasurer entry and use English.
-- [ ] Check the signed-in pages and entry at desktop and mobile widths.
+- [x] Match all treasurer pages to the existing blue, gold and emerald appearance without changing functionality.
+- [x] Reorganize the Admin Panel treasurer entry and use English.
+- [x] Check the signed-in pages and entry at desktop and mobile widths.
 
 ## RM Offerings System (kutoka faili la maelezo)
 - [x] Database: members, offering_categories (seed 4), transactions, transaction_items, audit_logs, vyeo vya Mhazini/Msaidizi/Mkaguzi
