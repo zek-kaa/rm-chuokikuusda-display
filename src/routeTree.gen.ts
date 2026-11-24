@@ -16,6 +16,10 @@ import { Route as GiveRouteImport } from './routes/give'
 import { Route as GuestDashboardRouteImport } from './routes/guest-dashboard'
 import { Route as RmRouteImport } from './routes/rm'
 import { Route as RmIndexRouteImport } from './routes/rm/index'
+import { Route as RmCategoriesRouteImport } from './routes/rm/categories'
+import { Route as RmReportsRouteImport } from './routes/rm/reports'
+import { Route as RmOfferingsBulkUploadRouteImport } from './routes/rm/offerings/bulk-upload'
+import { Route as RmOfferingsNewRouteImport } from './routes/rm/offerings/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +56,26 @@ const RmIndexRoute = RmIndexRouteImport.update({
   path: '/',
   getParentRoute: () => RmRoute,
 } as any)
+const RmCategoriesRoute = RmCategoriesRouteImport.update({
+  id: '/categories',
+  path: '/categories',
+  getParentRoute: () => RmRoute,
+} as any)
+const RmReportsRoute = RmReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => RmRoute,
+} as any)
+const RmOfferingsBulkUploadRoute = RmOfferingsBulkUploadRouteImport.update({
+  id: '/offerings/bulk-upload',
+  path: '/offerings/bulk-upload',
+  getParentRoute: () => RmRoute,
+} as any)
+const RmOfferingsNewRoute = RmOfferingsNewRouteImport.update({
+  id: '/offerings/new',
+  path: '/offerings/new',
+  getParentRoute: () => RmRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,7 +84,11 @@ export interface FileRoutesByFullPath {
   '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
   '/rm': typeof RmRouteWithChildren
+  '/rm/categories': typeof RmCategoriesRoute
+  '/rm/reports': typeof RmReportsRoute
   '/rm/': typeof RmIndexRoute
+  '/rm/offerings/bulk-upload': typeof RmOfferingsBulkUploadRoute
+  '/rm/offerings/new': typeof RmOfferingsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,7 +96,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
+  '/rm/categories': typeof RmCategoriesRoute
+  '/rm/reports': typeof RmReportsRoute
   '/rm': typeof RmIndexRoute
+  '/rm/offerings/bulk-upload': typeof RmOfferingsBulkUploadRoute
+  '/rm/offerings/new': typeof RmOfferingsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,14 +110,38 @@ export interface FileRoutesById {
   '/give': typeof GiveRoute
   '/guest-dashboard': typeof GuestDashboardRoute
   '/rm': typeof RmRouteWithChildren
+  '/rm/categories': typeof RmCategoriesRoute
+  '/rm/reports': typeof RmReportsRoute
   '/rm/': typeof RmIndexRoute
+  '/rm/offerings/bulk-upload': typeof RmOfferingsBulkUploadRoute
+  '/rm/offerings/new': typeof RmOfferingsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/dashboard' | '/give' | '/guest-dashboard' | '/rm' | '/rm/'
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/give'
+    | '/guest-dashboard'
+    | '/rm'
+    | '/rm/categories'
+    | '/rm/reports'
+    | '/rm/'
+    | '/rm/offerings/bulk-upload'
+    | '/rm/offerings/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/give' | '/guest-dashboard' | '/rm'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/give'
+    | '/guest-dashboard'
+    | '/rm/categories'
+    | '/rm/reports'
+    | '/rm'
+    | '/rm/offerings/bulk-upload'
+    | '/rm/offerings/new'
   id:
     | '__root__'
     | '/'
@@ -94,7 +150,11 @@ export interface FileRouteTypes {
     | '/give'
     | '/guest-dashboard'
     | '/rm'
+    | '/rm/categories'
+    | '/rm/reports'
     | '/rm/'
+    | '/rm/offerings/bulk-upload'
+    | '/rm/offerings/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,15 +217,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RmIndexRouteImport
       parentRoute: typeof RmRoute
     }
+    '/rm/categories': {
+      id: '/rm/categories'
+      path: '/categories'
+      fullPath: '/rm/categories'
+      preLoaderRoute: typeof RmCategoriesRouteImport
+      parentRoute: typeof RmRoute
+    }
+    '/rm/reports': {
+      id: '/rm/reports'
+      path: '/reports'
+      fullPath: '/rm/reports'
+      preLoaderRoute: typeof RmReportsRouteImport
+      parentRoute: typeof RmRoute
+    }
+    '/rm/offerings/bulk-upload': {
+      id: '/rm/offerings/bulk-upload'
+      path: '/offerings/bulk-upload'
+      fullPath: '/rm/offerings/bulk-upload'
+      preLoaderRoute: typeof RmOfferingsBulkUploadRouteImport
+      parentRoute: typeof RmRoute
+    }
+    '/rm/offerings/new': {
+      id: '/rm/offerings/new'
+      path: '/offerings/new'
+      fullPath: '/rm/offerings/new'
+      preLoaderRoute: typeof RmOfferingsNewRouteImport
+      parentRoute: typeof RmRoute
+    }
   }
 }
 
 interface RmRouteChildren {
+  RmCategoriesRoute: typeof RmCategoriesRoute
+  RmReportsRoute: typeof RmReportsRoute
   RmIndexRoute: typeof RmIndexRoute
+  RmOfferingsBulkUploadRoute: typeof RmOfferingsBulkUploadRoute
+  RmOfferingsNewRoute: typeof RmOfferingsNewRoute
 }
 
 const RmRouteChildren: RmRouteChildren = {
+  RmCategoriesRoute: RmCategoriesRoute,
+  RmReportsRoute: RmReportsRoute,
   RmIndexRoute: RmIndexRoute,
+  RmOfferingsBulkUploadRoute: RmOfferingsBulkUploadRoute,
+  RmOfferingsNewRoute: RmOfferingsNewRoute,
 }
 
 const RmRouteWithChildren = RmRoute._addFileChildren(RmRouteChildren)

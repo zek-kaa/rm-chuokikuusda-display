@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,10 +13,18 @@ import { db, useCategories, accessToken, today } from "@/lib/rm/data";
 import { normalizeTzPhone, tzs, PAYMENT_METHODS } from "@/lib/rm/format";
 import { sendReceiptSms } from "@/lib/rm/offerings.functions";
 
+export const Route = createFileRoute("/rm/offerings/bulk-upload")({ head: () => ({ meta: [
+  { title: "Bulk Offering Upload | SDA Chuo Kikuu" },
+  { name: "description", content: "Upload and review church offerings from Excel." },
+  { property: "og:title", content: "Bulk Offering Upload | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Upload and review church offerings from Excel." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: Bulk });
 
 type Row = { name: string; phone: string; date: string; method: string; amounts: Record<string, number> };
 
-export function BulkUploadPanel() {
+function Bulk() {
   const cats = useCategories(true);
   const send = useServerFn(sendReceiptSms);
   const qc = useQueryClient();
@@ -28,7 +37,7 @@ export function BulkUploadPanel() {
     const head = ["Full Name", "Phone Number", "Date (YYYY-MM-DD)", "Payment Method", ...list.map((c) => c.code)];
     const sample = [["Juma Hamisi", "0752000001", today(), "Cash", ...list.map((_, i) => (i === 0 ? 20000 : 0))],
       ["Neema John", "0713000002", today(), "M-Pesa", ...list.map((_, i) => (i === 1 ? 50000 : 0))]];
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([head, ...sample]), "Offerings");
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([head, ...sample]), "Sadaka");
     XLSX.writeFile(wb, "rm_template.xlsx");
   }
 
@@ -48,7 +57,7 @@ export function BulkUploadPanel() {
 
   const check = (r: Row) => {
     const phone = normalizeTzPhone(r.phone); const tot = Object.values(r.amounts).reduce((a, b) => a + b, 0);
-    const errs = [!phone && "Invalid phone", tot <= 0 && "Zero amount", !r.name && "Name", !PAYMENT_METHODS.includes(r.method as never) && "Method", !/^\d{4}-\d{2}-\d{2}$/.test(r.date) && "Date"].filter(Boolean) as string[];
+    const errs = [!phone && "Simu si sahihi", tot <= 0 && "Kiasi 0", !r.name && "Jina", !PAYMENT_METHODS.includes(r.method as never) && "Njia", !/^\d{4}-\d{2}-\d{2}$/.test(r.date) && "Tarehe"].filter(Boolean) as string[];
     return { phone, tot, errs };
   };
   const valid = rows.filter((r) => !check(r).errs.length);
@@ -69,29 +78,30 @@ export function BulkUploadPanel() {
       if (error || !tx) fail++; else await send({ data: { token, txId: tx as string } });
       done++; setProgress(Math.round((done / valid.length) * 100));
     }
-    toast.success(`Completed: ${done - fail}, failed: ${fail}`);
+    toast.success(`Zimekamilika: ${done - fail}, zimeshindwa: ${fail}`);
     setRows([]); qc.invalidateQueries({ queryKey: ["rm-tx"] });
   }
 
   return (
     <div className="space-y-4">
+      <h1 className="treasury-page-heading text-2xl font-bold">Pakia Sadaka kwa Excel</h1>
       <Card className="treasury-panel"><CardContent className="flex flex-wrap gap-3 pt-6">
-        <Button variant="outline" onClick={template}>Download Excel Template (.xlsx)</Button>
+        <Button variant="outline" onClick={template}>Pakua Template ya Excel (.xlsx)</Button>
         <label className="flex cursor-pointer items-center rounded-md border-2 border-dashed border-border px-4 py-2 text-sm"
           onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) onFile(f); }}>
-          Drag a file here or click to choose (.xlsx / .csv)
+          Buruta faili hapa au bofya kuchagua (.xlsx / .csv)
           <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
         </label>
       </CardContent></Card>
       {rows.length > 0 && <>
         <div className="grid gap-3 sm:grid-cols-4">
-          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Valid</p><p className="text-2xl font-bold">{valid.length}</p></CardContent></Card>
-          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">With errors</p><p className="text-2xl font-bold text-destructive">{rows.length - valid.length}</p></CardContent></Card>
-          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total</p><p className="text-2xl font-bold tabular-nums">{tzs(grand)}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Sahihi</p><p className="treasury-page-heading text-2xl font-bold">{valid.length}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Zenye makosa</p><p className="text-2xl font-bold text-destructive">{rows.length - valid.length}</p></CardContent></Card>
+          <Card className="treasury-panel"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Jumla</p><p className="text-2xl font-bold tabular-nums">{tzs(grand)}</p></CardContent></Card>
           <Card className="treasury-panel"><CardContent className="pt-6 text-xs">{list.map((c) => <div key={c.id} className="flex justify-between"><span>{c.code}</span><span className="tabular-nums">{tzs(valid.reduce((s, r) => s + (r.amounts[c.id] ?? 0), 0))}</span></div>)}</CardContent></Card>
         </div>
         <Card className="treasury-panel"><CardContent className="overflow-x-auto pt-6">
-          <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Name</th><th>Simu</th><th>Date</th><th>Method</th>{list.map((c) => <th key={c.id}>{c.code}</th>)}<th>Status</th><th /></tr></thead>
+          <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Jina</th><th>Simu</th><th>Tarehe</th><th>Njia</th>{list.map((c) => <th key={c.id}>{c.code}</th>)}<th>Hali</th><th /></tr></thead>
             <tbody>{rows.map((r, i) => { const c = check(r); return (
               <tr key={i} className={`border-t ${c.errs.length ? "bg-destructive/10" : ""}`}>
                 <td><Input value={r.name} onChange={(e) => upd(i, { name: e.target.value })} /></td>
@@ -99,12 +109,12 @@ export function BulkUploadPanel() {
                 <td><Input value={r.date} onChange={(e) => upd(i, { date: e.target.value })} /></td>
                 <td><Input value={r.method} onChange={(e) => upd(i, { method: e.target.value })} /></td>
                 {list.map((k) => <td key={k.id}><Input className="w-24 tabular-nums" value={r.amounts[k.id] ?? 0} onChange={(e) => upd(i, { amounts: { ...r.amounts, [k.id]: Number(e.target.value) || 0 } })} /></td>)}
-                <td>{c.errs.length ? <Badge variant="destructive">{c.errs.join(", ")}</Badge> : existing[c.phone!] ? <Badge variant="secondary">Existing member</Badge> : <Badge>New (will register)</Badge>}</td>
-                <td><Button size="sm" variant="ghost" onClick={() => setRows(rows.filter((_, j) => j !== i))}>Remove</Button></td>
+                <td>{c.errs.length ? <Badge variant="destructive">{c.errs.join(", ")}</Badge> : existing[c.phone!] ? <Badge variant="secondary">Mwanachama Aliyepo</Badge> : <Badge>Mpya (Atasajiliwa)</Badge>}</td>
+                <td><Button size="sm" variant="ghost" onClick={() => setRows(rows.filter((_, j) => j !== i))}>Futa</Button></td>
               </tr>); })}</tbody></table>
         </CardContent></Card>
         {progress !== null && <Progress value={progress} />}
-        <Button disabled={!valid.length || (progress !== null && progress < 100)} onClick={processAll}>Confirm & Process All ({valid.length})</Button>
+        <Button disabled={!valid.length || (progress !== null && progress < 100)} onClick={processAll}>Thibitisha & Chakata Zote ({valid.length})</Button>
       </>}
     </div>
   );

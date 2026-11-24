@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,8 +11,16 @@ import { toast } from "sonner";
 import { db, useCategories, useStaffRoles, perms, type Category } from "@/lib/rm/data";
 import { tzs } from "@/lib/rm/format";
 
+export const Route = createFileRoute("/rm/categories")({ head: () => ({ meta: [
+  { title: "Offering Categories | SDA Chuo Kikuu" },
+  { name: "description", content: "Manage church offering categories and conference allocations." },
+  { property: "og:title", content: "Offering Categories | SDA Chuo Kikuu" },
+  { property: "og:description", content: "Manage church offering categories and conference allocations." },
+  { property: "og:type", content: "website" },
+  { name: "twitter:card", content: "summary" },
+] }), component: Categories });
 
-export function CategoriesPanel() {
+function Categories() {
   const cats = useCategories();
   const roles = useStaffRoles();
   const qc = useQueryClient();
@@ -20,45 +29,45 @@ export function CategoriesPanel() {
     const { data } = await db().from("transaction_items").select("category_id, amount, transactions!inner(status)").neq("transactions.status", "voided");
     const t: Record<string, number> = {}; (data ?? []).forEach((i) => { t[i.category_id] = (t[i.category_id] ?? 0) + Number(i.amount); }); return t;
   } });
-  if (!perms(roles.data?.roles ?? []).head) return <p>Head Treasurer only.</p>;
+  if (!perms(roles.data?.roles ?? []).head) return <p>Mhazini Mkuu tu.</p>;
   const refresh = () => qc.invalidateQueries({ queryKey: ["rm-categories"] });
 
   async function save() {
     if (!edit) return;
     const l = Number(edit.local_church_share), c = Number(edit.conference_share);
-    if (l + c !== 100) return toast.error("Church + Conference share must equal 100");
-    if (!edit.name || !edit.code) return toast.error("Name and code are required");
+    if (l + c !== 100) return toast.error("Asilimia ya Kanisa + Konferensi lazima iwe 100");
+    if (!edit.name || !edit.code) return toast.error("Jina na Code vinahitajika");
     const row = { name: edit.name, code: edit.code.toUpperCase(), description: edit.description ?? null, local_church_share: l, conference_share: c };
     const { error } = edit.id ? await db().from("offering_categories").update(row).eq("id", edit.id) : await db().from("offering_categories").insert(row);
     if (error) return toast.error(error.message);
-    toast.success("Saved"); setEdit(null); refresh();
+    toast.success("Imehifadhiwa"); setEdit(null); refresh();
   }
   async function toggle(c: Category) {
     await db().from("offering_categories").update({ is_active: !c.is_active }).eq("id", c.id); refresh();
   }
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={() => setEdit({ local_church_share: 100, conference_share: 0 })}>+ Add</Button></div>
+      <div className="treasury-page-heading flex flex-wrap items-center gap-3"><h1 className="mr-auto text-2xl font-bold text-church-blue">Makundi ya Sadaka</h1>
+        <Button onClick={() => setEdit({ local_church_share: 100, conference_share: 0 })}>+ Ongeza</Button></div>
       <Card className="treasury-panel"><CardContent className="overflow-x-auto pt-6">
-        <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Name</th><th>Code</th><th>Church %</th><th>Conference %</th><th>Total</th><th>Hai</th><th /></tr></thead>
+        <table className="w-full text-sm"><thead><tr className="text-left text-muted-foreground"><th>Jina</th><th>Code</th><th>Kanisa %</th><th>Konferensi %</th><th>Jumla</th><th>Hai</th><th /></tr></thead>
           <tbody>{(cats.data ?? []).map((c) => <tr key={c.id} className="border-t">
             <td className="py-2">{c.name}</td><td>{c.code}</td><td>{c.local_church_share}</td><td>{c.conference_share}</td>
             <td className="tabular-nums">{tzs(totals.data?.[c.id] ?? 0)}</td>
             <td><Switch checked={c.is_active} onCheckedChange={() => toggle(c)} /></td>
-            <td><Button size="sm" variant="ghost" onClick={() => setEdit(c)}>Edit</Button></td></tr>)}</tbody></table>
+            <td><Button size="sm" variant="ghost" onClick={() => setEdit(c)}>Hariri</Button></td></tr>)}</tbody></table>
       </CardContent></Card>
       <Dialog open={!!edit} onOpenChange={(o) => !o && setEdit(null)}><DialogContent>
-        <DialogHeader><DialogTitle>{edit?.id ? "Edit Category" : "New Category"}</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{edit?.id ? "Hariri Kundi" : "Kundi Jipya"}</DialogTitle></DialogHeader>
         {edit && <div className="space-y-3">
-          <div><Label>Name</Label><Input value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></div>
+          <div><Label>Jina</Label><Input value={edit.name ?? ""} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></div>
           <div><Label>Code</Label><Input value={edit.code ?? ""} onChange={(e) => setEdit({ ...edit, code: e.target.value })} /></div>
-          <div><Label>Description</Label><Input value={edit.description ?? ""} onChange={(e) => setEdit({ ...edit, description: e.target.value })} /></div>
+          <div><Label>Maelezo</Label><Input value={edit.description ?? ""} onChange={(e) => setEdit({ ...edit, description: e.target.value })} /></div>
           <div className="grid grid-cols-2 gap-2">
-            <div><Label>Church %</Label><Input type="number" value={edit.local_church_share ?? 0} onChange={(e) => setEdit({ ...edit, local_church_share: Number(e.target.value), conference_share: 100 - Number(e.target.value) })} /></div>
-            <div><Label>Conference %</Label><Input type="number" value={edit.conference_share ?? 0} onChange={(e) => setEdit({ ...edit, conference_share: Number(e.target.value) })} /></div>
+            <div><Label>Kanisa %</Label><Input type="number" value={edit.local_church_share ?? 0} onChange={(e) => setEdit({ ...edit, local_church_share: Number(e.target.value), conference_share: 100 - Number(e.target.value) })} /></div>
+            <div><Label>Konferensi %</Label><Input type="number" value={edit.conference_share ?? 0} onChange={(e) => setEdit({ ...edit, conference_share: Number(e.target.value) })} /></div>
           </div>
-          <Button className="w-full" onClick={save}>Save</Button>
+          <Button className="w-full" onClick={save}>Hifadhi</Button>
         </div>}
       </DialogContent></Dialog>
     </div>
